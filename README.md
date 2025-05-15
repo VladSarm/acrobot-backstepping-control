@@ -3,7 +3,7 @@
 This repository implements a backstepping controller for the Acrobot, a classic underactuated robotic system. The Acrobot consists of two links connected linearly, with only the second joint actuated, presenting a challenging control problem.
 
 <p align="center">
-  <img src="gfx/backstepping/full_stabilization/acrobot.gif" alt="full stabilization of acrobot" width="400">
+  <img src="gfx/backstepping / backstepping_controller/full_stabilization/acrobot.gif" alt="full stabilization of acrobot" width="400">
 </p>
 <p align="center">
   <em>Full stabilization of the Acrobot system using a backstepping controller with PD control transition at the apex</em>
@@ -250,6 +250,15 @@ Several improvements could be made to enhance the controller performance:
 
 The full stabilization approach (energy-based + PD) clearly outperforms the energy-based only approach, as seen in the animations and plots. While the energy-based controller can bring the Acrobot close to the upright position, it cannot maintain stability there without the PD controller.
 
+#### Previous controller (energy based) with new dynamic
+<p align="center">
+  <img src="gfx/backstepping / energy_controller/full_stabilization/plots.png" alt="backstepping only plots" height="250">
+  <img src="gfx/backstepping / energy_controller/full_stabilization/acrobot.gif" alt="backstepping control only" height="250">
+</p>
+<p align="center">
+  <em>Acrobot using only backstepping controller (without PD stabilization)</em>
+</p>
+
 #### Backstepping controller only
 <p align="center">
   <img src="gfx/backstepping/backstepping_only/plots.png" alt="backstepping only plots" height="250">
@@ -261,11 +270,11 @@ The full stabilization approach (energy-based + PD) clearly outperforms the ener
 
 #### Full stabilization
 <p align="center">
-  <img src="gfx/backstepping/full_stabilization/plots.png" alt="full stabilization plots" height="250">
-  <img src="gfx/backstepping/full_stabilization/acrobot.gif" alt="full stabilization of acrobot" height="250">
+  <img src="gfx/backstepping / backstepping_controller/full_stabilization/plots.png" alt="backstepping only plots" height="250">
+  <img src="gfx/backstepping / backstepping_controller/full_stabilization/acrobot.gif" alt="backstepping control only" height="250">
 </p>
 <p align="center">
-  <em>Full stabilization of the Acrobot system using an backstepping controller with PD control transition at the apex</em>
+  <em>Acrobot using only backstepping controller (without PD stabilization)</em>
 </p>
 
 ## 👨‍💻 Code Structure
