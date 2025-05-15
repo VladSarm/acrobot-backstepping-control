@@ -1,12 +1,12 @@
 # Acrobot Control System
 
-This repository implements an energy-based controller for the Acrobot, a classic underactuated robotic system. The Acrobot consists of two links connected linearly, with only the second joint actuated, presenting a challenging control problem.
+This repository implements a backstepping controller for the Acrobot, a classic underactuated robotic system. The Acrobot consists of two links connected linearly, with only the second joint actuated, presenting a challenging control problem.
 
 <p align="center">
-  <img src="gfx/full_stabilization/acrobot.gif" alt="full stabilization of acrobot" width="400">
+  <img src="gfx/backstepping/full_stabilization/acrobot.gif" alt="full stabilization of acrobot" width="400">
 </p>
 <p align="center">
-  <em>Full stabilization of the Acrobot system using an energy-based controller with PD control transition at the apex</em>
+  <em>Full stabilization of the Acrobot system using a backstepping controller with PD control transition at the apex</em>
 </p>
 
 ## 📋 Overview
@@ -14,7 +14,7 @@ This repository implements an energy-based controller for the Acrobot, a classic
 The Acrobot system consists of two links connected in a chain, with one end fixed. Only the joint between the two links is actuated. The challenge is to swing up the Acrobot from its initial downward hanging position to an upright balanced position using only the torque applied at the middle joint.
 
 **Control Strategy:**
-1. **Energy-Based Control**: Initially swings up the Acrobot by regulating its total energy
+1. **Backstepping Control**: Initially swings up the Acrobot by regulating its total energy
 2. **PD Control**: Takes over near the upright position for stabilization
 
 ## 🚀 Quick Start
@@ -35,15 +35,15 @@ To run the standard simulation with full stabilization:
 uv run acrobot.py
 ```
 
-The plots and animation will be saved to `gfx/full_stabilization/`.
+The plots and animation will be saved to `gfx/backstepping/full_stabilization/`.
 
-To run the simulation with only the energy-based controller (without switching to PD control):
+To run the simulation with only the backstepping controller (without switching to PD control):
 
 ```bash
-uv run acrobot.py --energy-based-only
+uv run acrobot.py --backstepping-only
 ```
 
-This alternative simulation output will be saved to `gfx/energy_based_only/`.
+This alternative simulation output will be saved to `gfx/backstepping/backstepping_only/`.
 
 ## 🧠 Technical Background
 
@@ -116,9 +116,9 @@ G_2
 
 ### Control Strategy in Detail
 
-#### 1. Energy-Based Swing-Up Control
+#### 1. Backstepping Swing-Up Control
 
-The energy-based controller works by:
+The backstepping controller works by:
 - Calculating the total energy of the system
 - Comparing it to the target energy at the upright position
 - Applying torque to regulate the energy to the target value
@@ -195,7 +195,7 @@ Where:
 - $E$ is the current system energy
 - $E_r$ is the target energy at the upright equilibrium
 
-For the complete mathematical derivation with all steps and proofs, see the [detailed derivation document](https://github.com/antonbolychev/acm2025-wasserschwein-acrobot/blob/master/README-derivation-energy-based.md).
+For the complete mathematical derivation with all steps and proofs, see the [detailed derivation document](https://github.com/VladSarm/acrobot-backstepping-control/blob/main/README-derivation.md).
 
 #### 2. Linear PD Control for Stabilization
 
@@ -250,39 +250,39 @@ Several improvements could be made to enhance the controller performance:
 
 The full stabilization approach (energy-based + PD) clearly outperforms the energy-based only approach, as seen in the animations and plots. While the energy-based controller can bring the Acrobot close to the upright position, it cannot maintain stability there without the PD controller.
 
-#### Energy-based controller only
+#### Backstepping controller only
 <p align="center">
-  <img src="gfx/energy_based_only/plots.png" alt="energy-based only plots" height="250">
-  <img src="gfx/energy_based_only/acrobot.gif" alt="energy-based control only" height="250">
+  <img src="gfx/backstepping/backstepping_only/plots.png" alt="backstepping only plots" height="250">
+  <img src="gfx/backstepping/backstepping_only/acrobot.gif" alt="backstepping control only" height="250">
 </p>
 <p align="center">
-  <em>Acrobot using only energy-based controller (without PD stabilization)</em>
+  <em>Acrobot using only backstepping controller (without PD stabilization)</em>
 </p>
 
 #### Full stabilization
 <p align="center">
-  <img src="gfx/full_stabilization/plots.png" alt="full stabilization plots" height="250">
-  <img src="gfx/full_stabilization/acrobot.gif" alt="full stabilization of acrobot" height="250">
+  <img src="gfx/backstepping/full_stabilization/plots.png" alt="full stabilization plots" height="250">
+  <img src="gfx/backstepping/full_stabilization/acrobot.gif" alt="full stabilization of acrobot" height="250">
 </p>
 <p align="center">
-  <em>Full stabilization of the Acrobot system using an energy-based controller with PD control transition at the apex</em>
+  <em>Full stabilization of the Acrobot system using an backstepping controller with PD control transition at the apex</em>
 </p>
 
 ## 👨‍💻 Code Structure
 
-The implementation is contained in a single file (`acrobot.py`) with the following key components:
+The implementation is contained in a single file (`acrobot_with_backstep.py`) with the following key components:
 
-* [**Acrobot Class**](https://github.com/antonbolychev/acm2025-wasserschwein-acrobot/blob/d6ca88ff417ecafb20038cae29a3820ae6b99311/acrobot.py#L14): Defines the system dynamics and control methods
-* [**Simulation Function**](https://github.com/antonbolychev/acm2025-wasserschwein-acrobot/blob/d6ca88ff417ecafb20038cae29a3820ae6b99311/acrobot.py#L161C9-L161C17): Integrates the equations of motion using `solve_ivp` via RK4 scheme
-* [**Controller**](https://github.com/antonbolychev/acm2025-wasserschwein-acrobot/blob/d6ca88ff417ecafb20038cae29a3820ae6b99311/acrobot.py#L128): Enable PD controller for Acrobot stabilization
-* [**Visualization Functions**](https://github.com/antonbolychev/acm2025-wasserschwein-acrobot/blob/d6ca88ff417ecafb20038cae29a3820ae6b99311/acrobot.py#L272): Generates plots and animations
-* [**Command-Line Interface**](https://github.com/antonbolychev/acm2025-wasserschwein-acrobot/blob/d6ca88ff417ecafb20038cae29a3820ae6b99311/acrobot.py#L357): Uses `tyro` for argument parsing
+* [**Acrobot Class**](https://github.com/VladSarm/acrobot-backstepping-control/blob/d377a97f19c933ea749997421847d3e2cbe2cda9/acrobot_with_backstep.py#L14): Defines the system dynamics and control methods
+* [**Simulation Function**](https://github.com/VladSarm/acrobot-backstepping-control/blob/d377a97f19c933ea749997421847d3e2cbe2cda9/acrobot_with_backstep.py#L172): Integrates the equations of motion using `solve_ivp` via RK4 scheme
+* [**Controller**](https://github.com/VladSarm/acrobot-backstepping-control/blob/d377a97f19c933ea749997421847d3e2cbe2cda9/acrobot_with_backstep.py#L130): Enable PD controller for Acrobot stabilization
+* [**Visualization Functions**](https://github.com/VladSarm/acrobot-backstepping-control/blob/d377a97f19c933ea749997421847d3e2cbe2cda9/acrobot_with_backstep.py#L192): Generates plots and animations
+* [**Command-Line Interface**](https://github.com/VladSarm/acrobot-backstepping-control/blob/d377a97f19c933ea749997421847d3e2cbe2cda9/acrobot_with_backstep.py#L368): Uses `tyro` for argument parsing
 
 ## 🔍 Mathematical Details
 
-For a deeper understanding of the mathematical derivations, please refer to the [README-derivation-energy-based.md](https://github.com/antonbolychev/acm2025-wasserschwein-acrobot/blob/master/README-derivation-energy-based.md), which includes:
+For a deeper understanding of the mathematical derivations, please refer to the [README-derivation.md](https://github.com/VladSarm/acrobot-backstepping-control/blob/main/README-derivation.md), which includes:
 
-- Detailed derivation of the energy-based control law
+- Detailed derivation of the backstepping control law
 - Stability analysis using Lyapunov theory
 - Solvability conditions
 - Controller switching strategy
