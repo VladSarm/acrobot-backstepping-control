@@ -18,7 +18,7 @@ This document provides detailed mathematical derivations and analysis for the Ac
 
 ## Plant Description
 
-The Acrobot is a two-link planar robot with a single actuator at the joint of the two links. It serves as a highly simplified model of a human gymnast on a high bar, where the underactuated first joint models the gymnast's hands on the bar, and the actuated second joint models the gymnast's hips.
+The Acrobot is a two-link planar robot with a single actuator at the joint of  the two links. It serves as a highly simplified model of a human gymnast on a high bar, where the underactuated first joint models the gymnast's hands on the bar, and the actuated second joint models the gymnast's hips.
 
 ### System Dynamics
 
