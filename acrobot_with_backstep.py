@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from matplotlib.collections import LineCollection
 
 root_dir = Path(__file__).parent
-output_dir = root_dir / "gfx"
+output_dir = root_dir / "gfx" / "backstepping"
 
 
 class Acrobot:
@@ -371,7 +371,7 @@ class SimulationParams:
 
     def __post_init__(self):
         if self.energy_based_only:
-            self.output_dir = self.output_dir / "energy_based_only"
+            self.output_dir = self.output_dir / "backstepping_only"
         else:
             self.output_dir = self.output_dir / "full_stabilization"
 

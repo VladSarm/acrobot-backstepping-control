@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from matplotlib.collections import LineCollection
 
 root_dir = Path(__file__).parent
-output_dir = root_dir / "gfx"
+output_dir = root_dir / "gfx" / "energy_based"
 
 
 class Acrobot:
