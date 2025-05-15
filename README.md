@@ -59,18 +59,20 @@ This alternative simulation output will be saved to `gfx/energy_based_only/`.
 The motion equation of the Acrobot is:
 
 ```math
-M(q)\ddot{q} + C(q, \dot{q})\dot{q} + G(q) = \tau
+M(q)\ddot{q} + C(q, \dot{q})\dot{q} + G(q) = [0, \tau_2]^T =: \tau, \quad \dot{\tau_2} = \frac{u - \tau_2}{I}
 ```
 
 Where:
 - $q = [q_1, q_2]^T$ , where $q_1, q_2$ represents joint angles and $\dot{q_1}, \dot{q_2}$ represent their angular velocities accordingly 
-- $\tau = [0, \tau_2]^T$ represents torques (with $\tau_1 = 0$ since the first joint is unactuated, $\tau_2$ is a control action)
+- $\tau = [0, \tau_2]^T$ represents torques (with $\tau_1 = 0$ since the first joint is unactuated)
+- $u$ represents motor action that influences on only on torque to the second joint $\tau_2$
+- $I$ is a motor moment and is a constant
 - $M(q)$ is the inertia matrix
 - $C(q, \dot{q})$ contains Coriolis and centrifugal terms
 - $G(q)$ represents gravitational terms
 
 #### Inertia Matrix $M(q)$
-The inertia matrix $M(q)$ represents the mass distribution of the robotic system as a function of its configuration $q$. It maps joint accelerations to the corresponding inertial forces and torques. For the Acrobot, it's a 2×2 symmetric, positive-definite matrix where each element $M_{ij}$ represents the coupling inertia between joints $i$ and $j$. When a joint accelerates the inertia matrix determines how much torque is required at each joint to produce that acceleration.
+The inertia matrix $M(q)$ represents the mass distribution of the robotic system as a function of its configuration $q$. It maps joint accelerations to the corresponding inertial forces and torques. For the Acrobot, it's a 2×2 symmetric, positive-definite matrix where each element $M_{ij}$ represents the coupling inertia between joints $i$ and $j$. When a joint accelerates, the inertia matrix determines how much torque is required at each joint to produce that acceleration.
 
 ```math
 M(q) = \begin{bmatrix} 
@@ -176,10 +178,10 @@ V = \frac{1}{2} (E - E_r)^2 + \frac{1}{2} k_D \dot{q}_2^2 + \frac{1}{2} k_P q_2^
 
 Where $k_V > 0$ is a damping coefficient.
 
-5. Solving for $\tau_2$ using the system dynamics equations leads to the final control law:
+5. Solving for $\tau_2$ using the system dynamics equations leads to the following control law in terms of $tau_2$ (we will reformulate it via backstepping approach further):
 
 ```math
-\tau_2 = -\frac{(k_V \dot{q}_2 + k_P q_2)\Delta + k_D[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)]}{k_D M_{11} + (E - E_r)\Delta}
+\tau_2^{\text{en. based}} = -\frac{(k_V \dot{q}_2 + k_P q_2)\Delta + k_D[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)]}{k_D M_{11} + (E - E_r)\Delta}
 ```
 
 Where:
@@ -195,18 +197,27 @@ Where:
 
 For the complete mathematical derivation with all steps and proofs, see the [detailed derivation document](https://github.com/antonbolychev/acm2025-wasserschwein-acrobot/blob/master/README-derivation-energy-based.md).
 
-
 #### 2. Linear PD Control for Stabilization
 
 Once the system is near the upright position, a linear PD controller takes over:
 
 ```math
-\tau_2 = -F \cdot x
+\tau_2^{\text{pd}} = -F \cdot x
 ```
 
 Where:
 - $x = [q_1 - \pi/2, q_2, \dot{q}_1, \dot{q}_2]^T$ is the state error vector
 - $F$ is the feedback gain matrix
+
+#### 3. Backstepping controller
+
+Once we do not control $\tau_2$, but only $u$ we need to apply backstepping approach:
+
+Let us denote $\tau_2^{\text{target}}$ is the combination of $\tau_2^{\text{pd}}$ and $\tau_2^{\text{en. based}}$ derived above and put the final control law as follows: 
+
+```math
+u = \tau_2 - \gamma(u - \tau_2^{\text{target}})
+```
 
 ## 📊 Results and Discussion
 
