@@ -4,31 +4,33 @@ This document provides detailed mathematical derivations and analysis for the Ac
 
 ## Table of Contents
 - [Plant Description](#plant-description)
-- [Energy-Based Control: Detailed Derivation](#energy-based-control-detailed-derivation)
+- [Backstepping Control: Detailed Derivation](#backstepping-control-detailed-derivation)
   - [System Energy](#system-energy)
   - [Lyapunov Function Candidate](#lyapunov-function-candidate)
   - [Control Law Derivation](#control-law-derivation)
   - [Solvability Condition Analysis](#solvability-condition-analysis)
 - [Stability Analysis](#stability-analysis)
 - [Controller Implementation Details](#controller-implementation-details)
-  - [Energy-Based Controller](#energy-based-controller)
+  - [Backstepping Controller](#backstepping-controller)
   - [PD Controller for Stabilization](#pd-controller-for-stabilization)
   - [Controller Switching Strategy](#controller-switching-strategy)
 - [References](#references)
 
 ## Plant Description
 
-The Acrobot is a two-link planar robot with a single actuator at the joint of the two links. It serves as a highly simplified model of a human gymnast on a high bar, where the underactuated first joint models the gymnast's hands on the bar, and the actuated second joint models the gymnast's hips.
+The Acrobot is a two-link planar robot with a single actuator at the joint of  the two links. It serves as a highly simplified model of a human gymnast on a high bar, where the underactuated first joint models the gymnast's hands on the bar, and the actuated second joint models the gymnast's hips.
 
 ### System Dynamics
 
 The motion equation of a two-link planar robot is given by:
 
 ```math
-M(q)\ddot{q} + C(q, \dot{q})\dot{q} + G(q) = \tau
+M(q)\ddot{q} + C(q, \dot{q})\dot{q} + G(q) = [0, \tau_2]^T =: \tau, \quad \dot{\tau_2} = \frac{u - \tau_2}{I}
 ```
 
-where $q = [q_1, q_2]^T$ represents the joint angles, and $\tau = [0, \tau_2]^T$ represents the torques applied to joints (with $\tau_1 = 0$ for the Acrobot as the first joint is not actuated).
+where $q = [q_1, q_2]^T$ represents the joint angles, and $\tau = [0, \tau_2]^T$ represents torques (with $\tau_1 = 0$ since the first joint is unactuated) $u$ represents motor action that influences on only on torque to the second joint $\tau_2$ $I$ is a motor moment and is a constant.
+
+The inertia matrix $M(q)$ represents the mass distribution of the robotic system as a function of its configuration $q$. It maps joint accelerations to the corresponding inertial forces and torques. For the Acrobot, it's a 2×2 symmetric, positive-definite matrix where each element $M_{ij}$ represents the coupling inertia between joints $i$ and $j$. When a joint accelerates, the inertia matrix determines how much torque is required at each joint to produce that acceleration.
 
 The **inertia matrix** $M(q)$ is defined as:
 
@@ -91,7 +93,7 @@ where:
 - $I_i$ is the moment of inertia of link $i$
 - $g$ is the acceleration due to gravity
 
-## Energy-Based Control: Detailed Derivation
+## Backstepping Control: Detailed Derivation
 
 ### System Energy
 
@@ -142,22 +144,22 @@ Taking the time derivative of the Lyapunov function candidate along the system t
 \dot{V} = (E - E_r)\dot{E} + k_D \dot{q}_2 \ddot{q}_2 + k_P q_2 \dot{q}_2
 ```
 
-Since $\dot{E} = \dot{q}^T \tau = \dot{q}_2 \tau_2$ (as $\tau_1 = 0$), we have:
+Since $\dot{E} = \dot{q}^T \tau = \dot{q}_2 \tau_2$), we have:
 
 ```math
-\dot{V} = \dot{q}_2 \left( (E - E_r) \tau_2 + k_D \ddot{q}_2 + k_P q_2 \right)
+\dot{V} = \dot{q}_2 \bigl((E - E_r)\tau_2 + k_D \ddot{q}_2 + k_P q_2\bigr)
 ```
 
 To ensure $\dot{V} \leq 0$, we need to make:
 
 ```math
-(E - E_r) \tau_2 + k_D \ddot{q}_2 + k_P q_2 = -k_V \dot{q}_2
+(E - E_r)\tau_2 + k_D \ddot{q}_2 + k_P q_2 = -k_V \dot{q}_2
 ```
 
 where $k_V > 0$ is a damping coefficient. This makes:
 
 ```math
-\dot{V} = -k_V \dot{q}_2^2 \leq 0
+\dot{V} = -k_V \dot{q}_2^2 \le 0
 ```
 
 Now, to solve for the control input $\tau_2$, we need to express $\ddot{q}_2$ in terms of system variables and $\tau_2$.
@@ -183,13 +185,13 @@ Solving for $\ddot{q}_1$ from the first equation:
 Substituting into the second equation:
 
 ```math
-M_{21}\left(-\frac{M_{12}\ddot{q}_2 + H_1 + G_1}{M_{11}}\right) + M_{22}\ddot{q}_2 + H_2 + G_2 = \tau_2
+M_{21}\Bigl(-\frac{M_{12}\ddot{q}_2 + H_1 + G_1}{M_{11}}\Bigr) + M_{22}\ddot{q}_2 + H_2 + G_2 = \tau_2
 ```
 
 Rearranging:
 
 ```math
-\left(M_{22} - \frac{M_{21}M_{12}}{M_{11}}\right)\ddot{q}_2 = \tau_2 + \frac{M_{21}(H_1 + G_1)}{M_{11}} - H_2 - G_2
+\Bigl(M_{22} - \frac{M_{21}M_{12}}{M_{11}}\Bigr)\ddot{q}_2 = \tau_2 + \frac{M_{21}(H_1 + G_1)}{M_{11}} - H_2 - G_2
 ```
 
 Noting that $M_{22} - \frac{M_{21}M_{12}}{M_{11}} = \frac{\Delta}{M_{11}}$ where $\Delta = M_{11}M_{22} - M_{12}M_{21}$ is the determinant of the inertia matrix, we get:
@@ -201,25 +203,33 @@ Noting that $M_{22} - \frac{M_{21}M_{12}}{M_{11}} = \frac{\Delta}{M_{11}}$ where
 Now, substituting this expression for $\ddot{q}_2$ into our desired control law:
 
 ```math
-(E - E_r) \tau_2 + k_D \left(\frac{M_{11}}{\Delta}\tau_2 + \frac{M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)}{\Delta}\right) + k_P q_2 = -k_V \dot{q}_2
+(E - E_r)\tau_2 + k_D\!\Bigl(\frac{M_{11}}{\Delta}\tau_2 + \frac{M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)}{\Delta}\Bigr) + k_P q_2 = -k_V \dot{q}_2
 ```
 
 Rearranging to solve for $\tau_2$:
 
 ```math
-\left(E - E_r + \frac{k_D M_{11}}{\Delta}\right) \tau_2 = -k_V \dot{q}_2 - k_P q_2 - \frac{k_D[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)]}{\Delta}
+\Bigl(E - E_r + \frac{k_D M_{11}}{\Delta}\Bigr)\tau_2 = -k_V \dot{q}_2 - k_P q_2 - \frac{k_D\bigl[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)\bigr]}{\Delta}
 ```
 
 Multiplying both sides by $\frac{\Delta}{M_{11}}$:
 
 ```math
-\left(k_D + \frac{(E - E_r)\Delta}{M_{11}}\right) \tau_2 = -\frac{(k_V \dot{q}_2 + k_P q_2)\Delta + k_D[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)]}{M_{11}}
+\Bigl(k_D + \frac{(E - E_r)\Delta}{M_{11}}\Bigr)\tau_2 = -\frac{(k_V \dot{q}_2 + k_P q_2)\Delta + k_D\bigl[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)\bigr]}{M_{11}}
 ```
 
 Thus, the control law becomes:
 
 ```math
-\tau_2 = -\frac{(k_V \dot{q}_2 + k_P q_2)\Delta + k_D[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)]}{k_D M_{11} + (E - E_r)\Delta}
+\tau_2^{\text{en. based}} = -\frac{(k_V \dot{q}_2 + k_P q_2)\Delta + k_D\!\bigl[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)\bigr]}{k_D M_{11} + (E - E_r)\Delta}
+```
+
+Once we do not control $\tau_2$, but only $u$ we need to apply backstepping approach:
+
+Let us denote $\tau_2^{\text{target}}$ is the combination of $\tau_2^{\text{pd}}$ and $\tau_2^{\text{en. based}}$ derived above and put the final control law as follows: 
+
+```math
+u = \tau_2 - \gamma(\tau_2 - \tau_2^{\text{target}})
 ```
 
 ### Solvability Condition Analysis
@@ -288,40 +298,40 @@ The convergence behavior depends on the system parameters and control gains. A t
 
 ## Controller Implementation Details
 
-### Energy-Based Controller
+### Backstepping Controller
 
-The implementation of the energy-based controller directly follows the derived equation:
+The implementation of the backstepping controller directly follows the derived equation:
 
 ```python
-def energy_based_controller(self, t, state):
-    q1, q2, dq1, dq2 = state
-    
-    # Compute energy error
-    E = self.E(q1, q2, dq1, dq2)
-    E_error = E - self.Er
-    
-    # Compute mass matrix and its determinant
-    M_mat = self.M(q2)
-    M11, M12 = M_mat[0, 0], M_mat[0, 1]
-    M21, M22 = M_mat[1, 0], M_mat[1, 1]
-    Delta = M11 * M22 - M12 * M21
-    
-    # Compute Coriolis and gravity terms
-    C_vec = self.C(q2, dq1, dq2)
-    G_vec = self.G(q1, q2)
-    H1_plus_G1 = C_vec[0] + G_vec[0]
-    H2_plus_G2 = C_vec[1] + G_vec[1]
-    
-    # Compute numerator and denominator of control law
-    numerator = (self.kV * dq2 + self.kP * q2) * Delta + self.kD * (
-        M21 * H1_plus_G1 - M11 * H2_plus_G2
-    )
-    denominator = self.kD * M11 + E_error * Delta
-    
-    # Compute control torque
-    tau2 = -numerator / denominator
-    
-    return tau2
+def backstepping_controller(self, t, state):
+  q1, q2, dq1, dq2, _ = state
+
+  # Compute energy error
+  E = self.E(q1, q2, dq1, dq2)
+  E_error = E - self.Er
+
+  # Compute mass matrix and its determinant
+  M_mat = self.M(q2)
+  M11, M12 = M_mat[0, 0], M_mat[0, 1]
+  M21, M22 = M_mat[1, 0], M_mat[1, 1]
+  Delta = M11 * M22 - M12 * M21  # equation 16
+
+  # Compute Coriolis and gravity terms
+  C_vec = self.C(q2, dq1, dq2)
+  G_vec = self.G(q1, q2)
+  H1_plus_G1 = C_vec[0] + G_vec[0]
+  H2_plus_G2 = C_vec[1] + G_vec[1]
+
+  # Compute numerator and denominator of control law (equation 18)
+  numerator = (self.kV * dq2 + self.kP * q2) * Delta + self.kD * (
+      M21 * H1_plus_G1 - M11 * H2_plus_G2
+  )
+  denominator = self.kD * M11 + E_error * Delta
+
+  # Compute control torque
+  tau2 = -numerator / denominator
+
+  return tau2
 ```
 
 The control parameters satisfy the following constraints:
@@ -352,16 +362,16 @@ The gains for the PD controller are determined through linearization of the syst
 
 ### Controller Switching Strategy
 
-A switching strategy is employed to transition from the energy-based controller to the PD controller when the system is close enough to the upright position:
+A switching strategy is employed to transition from the backstepping controller to the PD controller when the system is close enough to the upright position:
 
 ```python
 def controller(self, t, state):
     x = np.array([state[0] - np.pi / 2, state[1], state[2], state[3]])
-    if self.is_energy_based_only or (
+    if self.is_backstepping_only or (
         np.abs(x[0]) + np.abs(x[1]) + 0.1 * np.abs(x[2]) + 0.1 * np.abs(x[3]) > 0.04
         and not self.is_switched
     ):
-        return self.energy_based_controller(t, state)
+        return self.backstepping_controller(t, state)
     else:
         self.is_switched = True
         return self.pd_controller(t, state)
@@ -369,11 +379,11 @@ def controller(self, t, state):
 
 The switching condition uses a weighted sum of state deviations from the upright equilibrium. When this sum falls below a threshold (0.04), the controller switches to the PD controller for stabilization.
 
-The option `is_energy_based_only` allows running the simulation with only the energy-based controller, without switching to the PD controller, for comparison purposes.
+The option `is_energy_based_only` allows running the simulation with only the backstepping controller, without switching to the PD controller, for comparison purposes.
 
 ## References
 
-1. Xin, X., & Kaneda, M. (2007). Analysis of the energy-based swing-up control of the Acrobot. International Journal of Robust and Nonlinear Control, 17(16), 1503-1524.
+1. Xin, X., & Kaneda, M. (2007). Analysis of the backstepping swing-up control of the Acrobot. International Journal of Robust and Nonlinear Control, 17(16), 1503-1524.
 
 2. Fantoni, I., Lozano, R., & Spong, M. W. (2000). Energy based control of the Pendubot. IEEE Transactions on Automatic Control, 45(4), 725-729.
 
