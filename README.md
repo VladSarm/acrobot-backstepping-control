@@ -216,7 +216,7 @@ Once we do not control $\tau_2$, but only $u$ we need to apply backstepping appr
 Let us denote $\tau_2^{\text{target}}$ is the combination of $\tau_2^{\text{pd}}$ and $\tau_2^{\text{en. based}}$ derived above and put the final control law as follows: 
 
 ```math
-u = \tau_2 - \gamma(u - \tau_2^{\text{target}})
+u = \tau_2 - \gamma(\tau_2 - \tau_2^{\text{target}})
 ```
 
 ## 📊 Results and Discussion
