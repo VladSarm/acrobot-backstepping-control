@@ -95,14 +95,6 @@ where:
 
 ## Backstepping Control: Detailed Derivation
 
-Once we do not control $\tau_2$, but only $u$ we need to apply backstepping approach:
-
-Let us denote $\tau_2^{\text{target}}$ is the combination of $\tau_2^{\text{pd}}$ and $\tau_2^{\text{en. based}}$ derived above and put the final control law as follows: 
-
-```math
-u = \tau_2 - \gamma(u - \tau_2^{\text{target}})
-```
-
 ### System Energy
 
 The total energy of the Acrobot system is expressed as:
@@ -229,7 +221,15 @@ Multiplying both sides by $\frac{\Delta}{M_{11}}$:
 Thus, the control law becomes:
 
 ```math
-\tau_2 = -\frac{(k_V \dot{q}_2 + k_P q_2)\Delta + k_D\!\bigl[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)\bigr]}{k_D M_{11} + (E - E_r)\Delta}
+\tau_2^{\text{en. based}} = -\frac{(k_V \dot{q}_2 + k_P q_2)\Delta + k_D\!\bigl[M_{21}(H_1 + G_1) - M_{11}(H_2 + G_2)\bigr]}{k_D M_{11} + (E - E_r)\Delta}
+```
+
+Once we do not control $\tau_2$, but only $u$ we need to apply backstepping approach:
+
+Let us denote $\tau_2^{\text{target}}$ is the combination of $\tau_2^{\text{pd}}$ and $\tau_2^{\text{en. based}}$ derived above and put the final control law as follows: 
+
+```math
+u = \tau_2 - \gamma(\tau_2 - \tau_2^{\text{target}})
 ```
 
 ### Solvability Condition Analysis
